@@ -1,22 +1,26 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
+import { useMotionValue, useSpring, useTransform, motion } from 'framer-motion'
+import usePrefersReducedMotion from '../hooks/usePrefersReducedMotion'
 
-export default function Counter({end, label}){
-  const [n, setN] = useState(0)
-  useEffect(()=>{
-    let raf
-    const dur = 900
-    const start = performance.now()
-    function step(t){
-      const p = Math.min(1,(t-start)/dur)
-      setN(Math.round(p*end))
-      if(p<1) raf = requestAnimationFrame(step)
+export default function Counter({ end, label }) {
+  const reduced = usePrefersReducedMotion()
+  const mv = useMotionValue(0)
+  const spring = useSpring(mv, { stiffness: 120, damping: 20 })
+  const display = useTransform(spring, (v) => Math.round(v).toLocaleString())
+
+  React.useEffect(() => {
+    if (reduced) {
+      mv.set(end)
+    } else {
+      mv.set(0)
+      const raf = requestAnimationFrame(() => mv.set(end))
+      return () => { try { cancelAnimationFrame(raf) } catch (e) {} }
     }
-    raf = requestAnimationFrame(step)
-    return ()=> cancelAnimationFrame(raf)
-  },[end])
+  }, [end, mv, reduced])
+
   return (
     <div className="text-center">
-      <div className="text-3xl font-serif">{n.toLocaleString()}</div>
+      <motion.div className="text-3xl font-serif" aria-live="polite">{display}</motion.div>
       <div className="text-sm text-gray-600">{label}</div>
     </div>
   )

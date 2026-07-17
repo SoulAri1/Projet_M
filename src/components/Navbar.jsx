@@ -1,29 +1,63 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { Menu } from 'lucide-react'
+import ThemeSwitcher from './ThemeSwitcher'
+import { Settings } from 'lucide-react'
+import { useState } from 'react'
+import AgencySettings from './AgencySettings'
 
-export default function Navbar(){
+const links = [
+  { to: '/services', label: 'Nos services' },
+  { to: '/gallery', label: 'Galerie' },
+  { to: '/team', label: 'Notre équipe' },
+  { to: '/blog', label: 'Blog' },
+  { to: '/contact', label: 'Contact' }
+]
+
+export default function Navbar() {
+  const [settingsOpen, setSettingsOpen] = useState(false)
+
   return (
-    <header className="bg-transparent py-6 px-6 sticky top-0 z-40">
-      <div className="max-w-6xl mx-auto flex items-center justify-between">
+    <header className="py-5 px-6 sticky top-0 z-40 backdrop-blur">
+      <div className="max-w-6xl mx-auto flex items-center justify-between rounded-full border border-slate-200/70 bg-white/70 px-5 py-3 shadow-soft">
         <Link to="/" className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[var(--brand)] flex items-center justify-center text-white font-semibold">EA</div>
+          <img src="/assets/logo.svg" alt="Ever After Events" className="w-10 h-10 object-cover rounded-full shadow-sm" />
           <div>
-            <div className="font-serif text-xl">Ever After Events</div>
-            <div className="text-xs text-gray-600">Agency & Wedding Planner</div>
+            <div className="font-serif text-lg">Ever After Events</div>
+            <div className="text-xs text-slate-500">Wedding Planner & Design Studio</div>
           </div>
         </Link>
 
         <nav className="hidden md:flex items-center gap-6 text-sm">
-          <Link to="/services" className="hover:text-[var(--brand)]">Nos services</Link>
-          <Link to="/gallery" className="hover:text-[var(--brand)]">Galerie</Link>
-          <Link to="/team" className="hover:text-[var(--brand)]">Notre équipe</Link>
-          <Link to="/planner" className="text-white bg-[var(--brand)] px-4 py-2 rounded-xl shadow-soft">Wedding Planner</Link>
+          {links.map((link) => (
+            <Link key={link.to} to={link.to} className="hover:text-[var(--mauve)] transition">{link.label}</Link>
+          ))}
+          <Link to="/planner" className="text-white bg-[var(--mauve)] px-4 py-2 rounded-full shadow-soft">Wedding Planner</Link>
         </nav>
 
-        <button className="md:hidden p-2 rounded focus-ring" aria-label="Ouvrir le menu">
-          <Menu />
-        </button>
+        <div className="hidden md:flex items-center gap-3">
+          <ThemeSwitcher />
+          <button onClick={() => setSettingsOpen(true)} className="p-2 rounded-full hover:bg-slate-50" aria-label="Réglages de l'agence">
+            <Settings />
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* Theme switcher: visible on small screens as compact */}
+          <div className="sm:hidden">
+            <ThemeSwitcher compact />
+          </div>
+
+          <button onClick={() => setSettingsOpen(true)} className="hidden sm:inline-flex p-2 rounded-full hover:bg-slate-50" aria-label="Réglages de l'agence">
+            <Settings />
+          </button>
+
+          <button className="md:hidden p-2 rounded-full focus-ring" aria-label="Ouvrir le menu">
+            <Menu />
+          </button>
+        </div>
+
+        {settingsOpen && <AgencySettings open={settingsOpen} onClose={() => setSettingsOpen(false)} /> }
       </div>
     </header>
   )

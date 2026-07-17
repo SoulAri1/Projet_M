@@ -13,5 +13,54 @@
   <body class="antialiased bg-[#FAF9F6] text-[#333333]">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+
+    <!-- Temporary error-overlay to surface runtime errors on blank pages (remove in production) -->
+    <script>
+      (function(){
+        function showError(message, stack){
+          try{
+            var id = 'ever-after-error-overlay'
+            var existing = document.getElementById(id)
+            if(existing) existing.remove()
+            var el = document.createElement('div')
+            el.id = id
+            el.style.position = 'fixed'
+            el.style.left = '12px'
+            el.style.right = '12px'
+            el.style.bottom = '12px'
+            el.style.top = '12px'
+            el.style.zIndex = 999999
+            el.style.background = 'rgba(0,0,0,0.85)'
+            el.style.color = '#fff'
+            el.style.padding = '20px'
+            el.style.borderRadius = '12px'
+            el.style.overflow = 'auto'
+            el.style.fontFamily = 'monospace'
+            el.innerHTML = '<h2 style="margin-top:0">Erreur JavaScript détectée</h2>' + '<pre style="white-space:pre-wrap">' + (message || 'Erreur inconnue') + '\n\n' + (stack || '') + '</pre>' + '<div style="position:absolute;right:16px;top:12px"><button id="ever-after-error-close" style="background:#fff;color:#000;border:none;padding:6px 10px;border-radius:8px;cursor:pointer">Fermer</button></div>'
+            document.body.appendChild(el)
+            document.getElementById('ever-after-error-close').addEventListener('click', function(){ el.remove() })
+          }catch(e){ console.error('failed to show overlay', e) }
+        }
+
+        window.addEventListener('error', function(e){
+          try{ showError(e.message, e.error && e.error.stack ? e.error.stack : (e.filename+':'+e.lineno+':'+e.colno)) }catch(e){}
+        })
+
+        window.addEventListener('unhandledrejection', function(ev){
+          var r = ev && ev.reason
+          try{ showError(r && r.message ? r.message : String(r), r && r.stack ? r.stack : '') }catch(e){}
+        })
+
+        // also capture early errors before scripts load (fallback)
+        window.addEventListener && window.addEventListener('load', function(){
+          setTimeout(function(){
+            if(!document.querySelector('#root') || document.getElementById('root').children.length === 0){
+              // no rendered content — suggest checking console
+              console.info('No DOM rendered inside #root yet. If the page is blank, open DevTools console for details.')
+            }
+          }, 600)
+        })
+      })()
+    </script>
   </body>
 </html>

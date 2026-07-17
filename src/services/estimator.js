@@ -3,12 +3,14 @@
  * Pure function that computes a wedding estimate and recommendations
  */
 
+import { getAgency } from './agencyService'
+
 function clamp(v,min,max){ return Math.max(min, Math.min(max, v)) }
 
-export default function estimateWedding({budget=20000, guests=80, date='', city='Paris', type='Mariage', style='Classic'}){
-  // city index: larger city => higher venue cost
+export default function estimateWedding({budget=20000, guests=80, date='', city='Paris', country='France', type='Mariage', style='Classic'}){
+  const AGENCY = getAgency()
   const cityIndex = (c)=> {
-    const big = ['Paris','Lyon','Marseille']
+    const big = ['Paris','Lyon','Marseille','London','Milan','Dubai']
     if(big.includes((c||'').trim())) return 1.25
     return 1.0
   }
@@ -22,37 +24,35 @@ export default function estimateWedding({budget=20000, guests=80, date='', city=
 
   const styleMultiplier = { Classic:1.0, Boho:0.95, Modern:1.05, Romantic:1.1 }[style] || 1.0
   const typeMultiplier = { Mariage:1.0, Elopement:0.6, Engagement:0.5, 'Vow Renewal':0.7 }[type] || 1.0
+  const countryMultiplier = AGENCY.countryMultipliers[country] || 1.0
 
-  const basePerGuest = clamp(35 * cityIndex(city) * styleMultiplier * typeMultiplier, 20, 250)
+  const basePerGuest = clamp(35 * cityIndex(city) * styleMultiplier * typeMultiplier * countryMultiplier, 25, 300)
   const perGuestCost = basePerGuest
 
   const venueBase = (()=>{
-    const base = 3000 * cityIndex(city)
+    const base = 3000 * cityIndex(city) * countryMultiplier
     if(season==='high') return base * 1.2
     if(season==='low') return base * 0.9
     return base
   })()
 
-  // vendors: photography, catering (per guest), decoration, coordination
-  const photography = 2500 * styleMultiplier
-  const catering = perGuestCost * guests * 0.6
-  const decoration = 1500 * styleMultiplier
-  const coordination = 1200
+  const photography = 2500 * styleMultiplier * countryMultiplier
+  const decoration = 1500 * styleMultiplier * countryMultiplier
+  const coordination = 1200 * countryMultiplier
 
-  let subtotal = perGuestCost * guests + venueBase + photography + decoration + coordination
+  const subtotal = perGuestCost * guests + venueBase + photography + decoration + coordination
   const contingency = Math.max(300, subtotal * 0.07)
   const total = Math.round(subtotal + contingency)
 
-  // recommendations (simple rule-based)
   const recs = []
-  recs.push('Coordinateur(trice) Jour J (fortement recommandé)')
-  if(guests > 50) recs.push('Traiteur haut de gamme')
-  else recs.push('Station de cocktail premium')
+  recs.push('Coordinateur(trice) Jour J premium')
+  if(guests > 60) recs.push('Traiteur haut de gamme')
+  else recs.push('Station de cocktail raffinée')
   recs.push('Photographe professionnel')
   if(style==='Romantic' || style==='Classic') recs.push('Décoration florale complète')
   if(budget > 30000) recs.push('Live band / DJ premium')
+  if(country === 'Émirats' || country === 'États-Unis') recs.push('Expérience de luxe & service concierge')
 
-  // timeline simplified depending on months to date
   const monthsTo = (()=>{ if(!date) return 9; const d = new Date(date); const now = new Date(); const diff = (d - now)/(1000*60*60*24*30); return Math.max(0, Math.round(diff)) })()
   const timeline = []
   if(monthsTo >= 12){
@@ -69,6 +69,8 @@ export default function estimateWedding({budget=20000, guests=80, date='', city=
     timeline.push('Planification urgente — prioriser lieu, traiteur, et coordination immédiate')
   }
 
+  const budgetFit = budget >= total ? 'Votre budget est compatible avec un mariage premium.' : 'Nous recommandons de prioriser lieu, traiteur et coordination pour optimiser votre budget.'
+
   return {
     perGuest: perGuestCost,
     venue: Math.round(venueBase),
@@ -78,6 +80,9 @@ export default function estimateWedding({budget=20000, guests=80, date='', city=
     contingency: Math.round(contingency),
     total,
     recommendations: recs,
-    timeline
+    timeline,
+    country,
+    countryMultiplier,
+    budgetFit
   }
 }
