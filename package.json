@@ -2,7 +2,11 @@
   "name": "ever-after-events",
   "version": "1.0.0",
   "private": true,
+  "type": "module", 
   "description": "Ever After Events - Premium wedding agency demo",
+  "engines": { 
+      "node": "18.x"
+},
   "scripts": {
     "dev": "vite",
     "build": "vite build",
