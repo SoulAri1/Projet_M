@@ -5,7 +5,7 @@
   "type": "module", 
   "description": "Ever After Events - Premium wedding agency demo",
   "engines": { 
-      "node": "18.x"
+      "node": "24.x"
 },
   "scripts": {
     "dev": "vite",
