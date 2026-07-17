@@ -1,0 +1,9 @@
+Placeholder for images - replace with optimized images in /src/assets or /public/assets
+- service1.jpg
+- service2.jpg
+- service3.jpg
+- gallery1.jpg
+- gallery2.jpg
+- gallery3.jpg
+- team1.jpg
+- team2.jpg

@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root{
+  --brand: #D4AF37;
+  --bg: #FAF9F6;
+  --soft: #F8D7DA;
+  --calm: #A8B5A2;
+}
+
+html, body, #root { height: 100%; }
+
+body { font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background: var(--bg); }
+
+.h1 { font-family: 'Playfair Display', serif; }
+
+/* subtle glassmorphism */
+.glass {
+  background: rgba(255,255,255,0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.focus-ring:focus {
+  outline: 3px solid rgba(212,175,55,0.18);
+  outline-offset: 2px;
+}
